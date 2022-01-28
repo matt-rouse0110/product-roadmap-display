@@ -21,7 +21,7 @@ def printChildren(object: Widget):
       widgetText = ';'
       if child.winfo_name() == 'quitButton':
          print("Getting button text")
-         waiting = input("Ready to go?")
+         # waiting = input("Ready to go?")
          widgetText = ';'+child.cget('text')
       print(str(child)  + ';' + str(child.winfo_width())+';',isVisible,widgetText)
       printChildren(child)
@@ -103,7 +103,7 @@ class Application(ttk.Frame):
          command=self.quit,name="quitButton")
       self.quitButton.grid(row=0,column=0)
    def createStdJiraInputPrompts(self):
-      self.master.geometry("")
+      # self.master.geometry("")
       children = self.winfo_children()
       stdFound = False
       for child in children:
@@ -141,7 +141,7 @@ class Application(ttk.Frame):
             child_widget.grid()
    def createCustJiraInputPrompts(self):
       topLevel = self.second_frame
-      self.master.geometry("")
+      # self.master.geometry("")
       children = self.winfo_children()
       custFound = False
       for child in children:
@@ -179,7 +179,7 @@ class Application(ttk.Frame):
       if self.JQLInput.get() != '':
          self.CreateSubmitButton(event=event)
    def CreateSubmitButton(self, event):
-      self.master.geometry("")
+      # self.master.geometry("")
       topLevel = self.second_frame
       """
       ***

@@ -6,7 +6,7 @@ site_packages = next(p for p in sys.path if 'site-packages' in p) # added line
 block_cipher = None
 
 
-a = Analysis(['dataParser.py'],
+a = Analysis(['roadmap_gui.py'],
              pathex=['C:\\Users\\Desktop'],
              binaries=[],
              datas=[(path.join(site_packages,"pptx","templates"), "pptx/templates")],
