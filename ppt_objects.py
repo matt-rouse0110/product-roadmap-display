@@ -13,11 +13,12 @@ def executeRoadmapCreation(username, APIKey, project, fields):
    
    print(project)
    print(fields)
-   url = 'https://rouse.atlassian.net/rest/api/3/search?'
+   url = 'https://gentrack.atlassian.net/rest/api/3/search?'
    jql='jql=project%3D'+project+'+and+issuetype%3DEpic&fields='+fields
+   print(url+jql)
    myResponse = requests.get(url+jql,auth=(username,APIKey))
-   f = open(r'C:\Users\mattr\OneDrive\Documents\pythonTesting\dummyData.json', 'r')
-   jsonData = json.load(f)
+   # f = open(r'C:\Users\mattr\OneDrive\Documents\pythonTesting\dummyData.json', 'r')
+   # jsonData = json.load(f)
    jsonData = myResponse.json()
    print(json.dumps(jsonData,indent=3))
    
