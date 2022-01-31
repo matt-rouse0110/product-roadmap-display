@@ -15,6 +15,6 @@ If there are constant alterations needed, please feed these back, so that we can
 ##For developers
 This tool is written in python and makes primary uses of tkinter, python-pptx and requests modules. 
 
-For publishing purposes, a version of the code will be frozen and an executable produced via pyinstaller (refer to the ./dataparser.spec file)
+For publishing purposes, a version of the code will be frozen and an executable produced via pyinstaller (refer to the [Spec file](./dataparser.spec) file)
 
 Please reach out for any further guidance needed.
