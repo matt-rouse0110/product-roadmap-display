@@ -1,5 +1,5 @@
-#Product Roadmap Display
-##For end-users
+# Product Roadmap Display
+## For end-users
 This is intended to serve as a tool to easily convert a roadmap based in Jira into an externally communicatable format in PowerPoint.
 
 It is executed as a downloadable .exe that will run on Windows without any dependencies.
@@ -12,7 +12,7 @@ The intent is to expedite the creation of roadmaps, such that the bulk of the he
 
 If there are constant alterations needed, please feed these back, so that we can integrate these in as well.
 
-##For developers
+## For developers
 This tool is written in python and makes primary uses of tkinter, python-pptx and requests modules. 
 
 For publishing purposes, a version of the code will be frozen and an executable produced via pyinstaller (refer to the [Spec file](./dataParser.spec) file)
