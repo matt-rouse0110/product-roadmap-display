@@ -1,9 +1,11 @@
+from functools import partial
 from cmath import exp
 from distutils import command
 import sys
 from ast import Global
 from cgitb import text
-from turtle import isvisible
+from turtle import bgcolor, isvisible, width
+from webbrowser import get
 import ppt_objects
 import tkinter as tk
 from tkinter import Frame, Widget, ttk as ttk
@@ -20,10 +22,21 @@ def printChildren(object: Widget):
          isVisible = "Is not Visible"
       widgetText = ';'
       if child.winfo_name() == 'quitButton':
-         print("Getting button text")
+         # print("Getting button text")
          # waiting = input("Ready to go?")
          widgetText = ';'+child.cget('text')
-      print(str(child)  + ';' + str(child.winfo_width())+';',isVisible,widgetText)
+      grid_dets = child.grid_info()
+      grid_dets['height'] = child.winfo_height()
+      grid_dets['width'] = child.winfo_width()
+      if not("in" in grid_dets):
+         # print(str(child)  + ';' + str(child.winfo_width())+';',isVisible,widgetText)
+         grid_dets['in'] = child.winfo_parent()
+      grid_dets['name'] = child
+      grid_dets_copy = {}
+      for key in grid_dets:
+         if key == 'height' or key == 'width' or key == 'in' or key == 'name':
+            grid_dets_copy[key] = grid_dets[key]
+      print(grid_dets_copy)
       printChildren(child)
 
 class ScrollableFrame(ttk.Frame):
@@ -49,30 +62,98 @@ class ScrollableFrame(ttk.Frame):
 
 class Application(ttk.Frame):
    def __init__(self, master=None):
-      ttk.Frame.__init__(self, master)
-      self.pack(fill=tk.BOTH,expand=1)
-      main_canvas = tk.Canvas(self)
-      """ top.rowconfigure(0, weight=1)
-      top.columnconfigure(0, weight=1)
-      self.rowconfigure(0, weight=1)
-      self.columnconfigure(0, weight=1)
-      self.scrollableFrame = ScrollableFrame(self) """
-      scroll=tk.Scrollbar(main_canvas, orient=tk.VERTICAL,command=main_canvas.yview)
-      scroll.pack(side=tk.RIGHT,fill=tk.Y)
-      main_canvas.configure(yscrollcommand=scroll.set)
-      main_canvas.bind("<Configure>",lambda e: main_canvas.configure(scrollregion=main_canvas.bbox("all")))
-      # main_canvas.grid(sticky="news")
-      main_canvas.pack(side=tk.LEFT,fil=tk.BOTH,expand=1)
+      main_frame = ttk.Frame.__init__(self, master)
+      
+      main_canvas = tk.Canvas(main_frame, bg='purple')
+      scroll=tk.Scrollbar(main_frame, orient=tk.VERTICAL,command=main_canvas.yview)
 
       self.second_frame = ttk.Frame(main_canvas)
+      # main_canvas.bind("<Configure>",lambda e: main_canvas.configure(scrollregion=main_canvas.bbox("all")))
+      # main_canvas.grid(sticky="news")
+      # self.second_frame.bind("<Configure>", lambda e: self.second_frame.configure()
       # self.second_frame.grid(rowspan=50,columnspan=3,sticky="news")
 
-      main_canvas.create_window((0,0),window=self.second_frame, anchor="nw")
+      
 
-      """ self.master.geometry("") """
+      self.master.geometry("")
+      print(self.winfo_screenheight())
+      print(self.winfo_screenwidth())
       self.createWidgets()
+      main_canvas.create_window(0,0,window=self.second_frame, anchor="nw")
+      main_canvas.update_idletasks()
+      bbox = main_canvas.bbox("all")
+      main_canvas.configure(yscrollcommand=scroll.set,scrollregion=bbox)
+      main_canvas.pack(side=tk.LEFT,fill=tk.BOTH,expand=True)
+      scroll.pack(side=tk.RIGHT,fill=tk.Y)
+      self.pack(fill=tk.BOTH,expand=True)
+      self.main_canv = main_canvas
+      self.resetScrollbar()
       self.submitCreated = False
 
+      self.second_frame.bind("<Configure>", self.OnFrameConfigure)
+      print(main_canvas.winfo_width())
+      print(main_canvas.winfo_height())
+      # self.main_canv.bind('<Configure>', self.FrameWidth)
+
+   # def FrameWidth(self, event):
+   #    canvas_width = event.width
+   #    # print(canvas_width)
+   #    # self.main_canv.config(self.main_canv, width = canvas_width)
+
+   def OnFrameConfigure(self, event):
+      self.main_canv.configure(width=event.width)
+      if event.height <= self.winfo_screenheight()-20:
+         self.main_canv.configure(height=event.height)
+      self.main_canv.configure(scrollregion=self.main_canv.bbox("all"))
+
+   def resetScrollbar(self):
+      value = 1
+      # self.master.geometry(str(self.master.winfo_width())+"x"+str(self.master.winfo_height()))
+      # self.master.geometry("600x400")
+      # self.winfo_toplevel().geometry("")
+      # self.main_canv.bind("<Configure>",lambda e: self.main_canv.configure(scrollregion=self.main_canv.bbox("all")))
+   def processLabel(self, rb_var: tk.IntVar, frame: ttk.Frame):
+      """
+      If it is a potential phase label, need to ask what the values are to look for - everything else will be excluded
+      ***
+      """
+      print(rb_var)
+      if rb_var.get() == 0:
+         print("do stuff for storing content from tickets to display")
+         children = frame.winfo_children()
+         for child in children:
+            if child.winfo_class() == 'Text':
+               child.grid_remove()
+            elif child.winfo_name() == "phaseTextEntry":
+               child.grid_remove()
+      elif rb_var.get() == 1:
+         print("do stuff for sorting roadmap phases")
+         children = frame.winfo_children()
+         found = False
+         for child in children:
+            if child.winfo_class() == 'Text':
+               child.grid()
+               found = True
+               print("re-enabled the text entry.")
+               print(child.grid_info())
+            elif child.winfo_name() == "phaseTextEntry":
+               child.grid()
+               print("re-enabled the text label.")
+               print(child.grid_info())
+
+         if(not(found)):
+            frame.phaseLabel = ttk.Label(frame,text="Enter phases on new lines (in order)",name="phaseTextEntry")
+            frame.phaseInput = tk.Text(frame,height=5, width=25)
+            frame.phaseLabel.grid(row=3)
+            frame.phaseInput.grid(row=3,column=1)
+            self.master.geometry("")
+         
+      self.resetScrollbar()
+      """ parent = frame.winfo_parent()
+      while parent != '':
+         print(parent)
+         parent = parent.winfo_parent()
+ """
    def createWidgets(self):
       self.createQuitButton()
       self.createInitialPrompts()
@@ -90,13 +171,13 @@ class Application(ttk.Frame):
       self.passwdLabel.grid(row=rowCnt, column=1,)
       rowCnt+=1
       self.choice = tk.IntVar()
-      self.choice = -1
+      self.choice.set(-1)
       self.StdJiraChoice = ttk.Radiobutton(topLevel,variable=self.choice,text="Standard Jira Format",value=0,command=self.createStdJiraInputPrompts)
       self.StdJiraChoice.grid(row=rowCnt,column=1)
       rowCnt+=1
       self.CustJiraChoice = ttk.Radiobutton(topLevel,variable=self.choice,text="Custom Jira Query",value=1,command=self.createCustJiraInputPrompts)
       self.CustJiraChoice.grid(row=rowCnt,column=1)
-      self.update_idletasks()
+      self.winfo_toplevel().update_idletasks()
       # printChildren(self)
    def createQuitButton(self):
       self.quitButton = ttk.Button(self.second_frame, text='Quit',
@@ -131,7 +212,7 @@ class Application(ttk.Frame):
          self.labelsInput = tk.Listbox(self.StdFrame,selectmode=tk.MULTIPLE)
          self.labelsInput.insert(tk.END,"issueKey")
          self.labelsInput.insert(tk.END,"summary")
-         self.labelsInput.insert(tk.END,"Labels")
+         self.labelsInput.insert(tk.END,"labels")
          self.labelsInput.insert(tk.END,"fixVersion")
          self.labelsInput.grid(row=rowCnt,column=2)
          self.labelsInput.bind('<<ListboxSelect>>', self.CreateSubmitButton)
@@ -167,7 +248,7 @@ class Application(ttk.Frame):
          self.labelsInput = tk.Listbox(self.CustFrame,selectmode=tk.MULTIPLE)
          self.labelsInput.insert(tk.END,"issueKey")
          self.labelsInput.insert(tk.END,"summary")
-         self.labelsInput.insert(tk.END,"Labels")
+         self.labelsInput.insert(tk.END,"labels")
          self.labelsInput.insert(tk.END,"fixVersion")
          self.labelsInput.grid(row=rowCnt,column=2)
          self.labelsInput.bind('<<ListboxSelect>>', self.CreateSubmitButton)
@@ -181,20 +262,8 @@ class Application(ttk.Frame):
    def CreateSubmitButton(self, event):
       # self.master.geometry("")
       topLevel = self.second_frame
-      """
-      ***
-      In here need to map out the selected fields over to the content of the roadmap item and the phases to be used (i.e. Now, Next, Future)
-
-      Loop through each selected field and provide two options:
-      1. Add as part of the roadmap item
-      2. Contains a potential phase label
-
-      If it is a potential phase label, need to ask what the values are to look for - everything else will be excluded
-      *** 
-      """
       rowCnt = 8
-      innerRowCnt = 1
-      fieldSelection = self.labelsInput.curselection()
+      
       children = self.winfo_children()
       labelsFrameFound = False
       for child in children:
@@ -205,29 +274,33 @@ class Application(ttk.Frame):
       else:
          frameChildren = self.labelsMapFrame.winfo_children()
          for childLabel in frameChildren:
-            childLabel.grid_forget()
+            childLabel.grid_remove()
+      """
+      ***
+      In here need to map out the selected fields over to the content of the roadmap item and the phases to be used (i.e. Now, Next, Future)
+
+      Loop through each selected field and provide two options:
+      1. Add as part of the roadmap item
+      2. Contains a potential phase label
+      """
+      innerRowCnt = 1
+      fieldSelection = self.labelsInput.curselection()
       for index in fieldSelection:
          if not(self.labelsMapFrame.winfo_ismapped()):
             self.labelsMapFrame.grid(row=rowCnt,columnspan=2)
          item = self.labelsInput.get(index)
-         label = ttk.Label(self.labelsMapFrame,text=item)
-         self.labelChoice = tk.IntVar()
-         self.labelChoice = -1
-         detailChoice = ttk.Radiobutton(self.labelsMapFrame,variable=self.labelChoice,text="Part of roadmap item details",value=0)
-         detailChoice.grid(row=innerRowCnt,column=1)
-         label.grid(row=innerRowCnt)
+         frame = ttk.Frame(self.labelsMapFrame, name=item+"LabelsFrame")
+         frame.grid(row=innerRowCnt,columnspan=2)
+         label = ttk.Label(frame,text=item)
+         labelChoice = tk.IntVar()
+         labelChoice.set(-1)
+         detailChoice = ttk.Radiobutton(frame,variable=labelChoice,text=item + " as part of roadmap item details",value=0, command=partial(self.processLabel,labelChoice,frame))
+         detailChoice.grid(row=1,column=1)
+         label.grid(row=1)
+         phaseChoice = ttk.Radiobutton(frame,variable=labelChoice,text=item + " as part of roadmap phase details",value=1, command=partial(self.processLabel,labelChoice,frame))
+         phaseChoice.grid(row=2,column=1)
          innerRowCnt +=1
-         phaseChoice = ttk.Radiobutton(self.labelsMapFrame,variable=self.labelChoice,text="Part of roadmap phase details",value=1)
-         phaseChoice.grid(row=innerRowCnt,column=1)
-         innerRowCnt +=1
-         phaseLabel = ttk.Label(self.labelsMapFrame,text="Enter phases on new lines (in order)")
-         phaseInput = tk.Text(self.labelsMapFrame)
-         phaseLabel.grid(row=innerRowCnt)
-         phaseInput.grid(row=innerRowCnt,column=1)
-         innerRowCnt +=1
-   
-      
-      
+
       if not(self.submitCreated):
          rowCnt +=1
          self.submitButton = ttk.Button(topLevel, text='Submit',
@@ -252,6 +325,7 @@ class Application(ttk.Frame):
 app = Application()
 printChildren(app)
 app.master.title('Roadmap Creation')
+# app.master.geometry("400x400")
 app.mainloop()
 
 
